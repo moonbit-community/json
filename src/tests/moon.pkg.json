@@ -1,6 +1,5 @@
 {
   "import": [
-    "jinser/json",
-    "jinser/json/lib"
+    "jinser/json"
   ]
 }

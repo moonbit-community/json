@@ -1,11 +1,12 @@
 ///|
-pub traitalias @lib.Decode
-
-///|
-pub fnalias @lib.(decode, decode_start, decode_continue)
-
-///|
-pub typealias @lib.(Value, ContinueValue, FinishValue)
-
-///|
-pub typealias @lib.(ParseError, Reason)
+pub using @lib {
+  trait Decode,
+  decode,
+  decode_start,
+  decode_continue,
+  type Value,
+  type ContinueValue,
+  type FinishValue,
+  type ParseError,
+  type Reason,
+}

@@ -1,5 +1,7 @@
 ///|
-fnalias @json.(decode, decode_start, decode_continue)
-
-///|
-pub typealias @json.Value
+using @json {
+  decode,
+  decode_start,
+  decode_continue,
+  type Value,
+}
