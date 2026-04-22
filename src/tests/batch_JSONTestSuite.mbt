@@ -10,10 +10,10 @@ test "batch i_number_double_huge_neg_exp" {
   inspect(actual, content="Array([Number(0)])")
 }
 
-///| FIXME: value out of range
+///|
+/// FIXME: value out of range
 test "panic batch i_number_huge_exp" {
-  let complete_json =
-    "[0.4e" +
+  let complete_json = "[0.4e" +
     "006699999999999999999999999999999999999999999999999999999999" +
     "999999999999999999999999999999999999999999999999999999999999" +
     "69999999006]"
@@ -21,7 +21,8 @@ test "panic batch i_number_huge_exp" {
   inspect(actual, content="")
 }
 
-///| FIXME: value out of range
+///|
+/// FIXME: value out of range
 test "panic batch i_number_neg_int_huge_exp" {
   let complete_json =
     #|[-1e+9999]
@@ -29,7 +30,8 @@ test "panic batch i_number_neg_int_huge_exp" {
   inspect(actual, content="")
 }
 
-///| FIXME: value out of range
+///|
+/// FIXME: value out of range
 test "panic batch i_number_pos_double_huge_exp" {
   let complete_json =
     #|[1.5e+9999]
@@ -37,7 +39,8 @@ test "panic batch i_number_pos_double_huge_exp" {
   inspect(actual, content="")
 }
 
-///| FIXME: value out of range
+///|
+/// FIXME: value out of range
 test "panic batch i_number_real_neg_overflow" {
   let complete_json =
     #|[-123123e100000]
@@ -45,7 +48,8 @@ test "panic batch i_number_real_neg_overflow" {
   inspect(actual, content="")
 }
 
-///| FIXME: value out of range
+///|
+/// FIXME: value out of range
 test "panic batch i_number_real_pos_overflow" {
   let complete_json =
     #|[123123e100000]
@@ -53,7 +57,8 @@ test "panic batch i_number_real_pos_overflow" {
   inspect(actual, content="")
 }
 
-///| FIXME: value out of range
+///|
+/// FIXME: value out of range
 test "panic batch i_number_real_underflow" {
   let complete_json =
     #|[123e-10000000]
@@ -61,7 +66,8 @@ test "panic batch i_number_real_underflow" {
   inspect(actual, content="")
 }
 
-///| FIXME: value out of range
+///|
+/// FIXME: value out of range
 test "panic batch i_number_too_big_neg_int" {
   let complete_json =
     #|[-123123123123123123123123123123]
@@ -69,7 +75,8 @@ test "panic batch i_number_too_big_neg_int" {
   inspect(actual, content="")
 }
 
-///| FIXME: value out of range
+///|
+/// FIXME: value out of range
 test "panic batch i_number_too_big_pos_int" {
   let complete_json =
     #|[100000000000000000000]
@@ -77,7 +84,8 @@ test "panic batch i_number_too_big_pos_int" {
   inspect(actual, content="")
 }
 
-///| FIXME: value out of range
+///|
+/// FIXME: value out of range
 test "panic batch i_number_very_big_negative_int" {
   let complete_json =
     #|[-237462374673276894279832749832423479823246327846]
@@ -1805,8 +1813,7 @@ test "batch n_structure_open_array_comma" {
 
 ///|
 test "batch n_structure_open_array_object" {
-  let complete_json =
-    "[" + "{\"\":[".repeat(50000) + "{\"\":"
+  let complete_json = "[" + "{\"\":[".repeat(50000) + "{\"\":"
   let actual = decode(complete_json)
   inspect(actual, content="")
 }
@@ -2360,15 +2367,13 @@ test "batch y_object" {
 ///|
 test "batch y_object_long_strings" {
   let long_string = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  let complete_json =
-    "{\"x\":[{\"id\": \"" +
+  let complete_json = "{\"x\":[{\"id\": \"" +
     long_string +
     "\"}], \"id\": \"" +
     long_string +
     "\"}"
   let actual = decode(complete_json)
-  let expected =
-    "Object({\"x\": Array([Object({\"id\": String(\"" +
+  let expected = "Object({\"x\": Array([Object({\"id\": String(\"" +
     long_string +
     "\")})]), \"id\": String(\"" +
     long_string +
@@ -2394,8 +2399,7 @@ test "batch y_object_string_unicode" {
   let complete_json =
     #|{"title":"\u041f\u043e\u043b\u0442\u043e\u0440\u0430 \u0417\u0435\u043c\u043b\u0435\u043a\u043e\u043f\u0430" }
   let actual = decode(complete_json)
-  let expected =
-    "Object({\"title\": String(\"\\\\u041f\\\\u043e\\\\u043b\\\\u0442" +
+  let expected = "Object({\"title\": String(\"\\\\u041f\\\\u043e\\\\u043b\\\\u0442" +
     "\\\\u043e\\\\u0440\\\\u0430 \\\\u0417\\\\u0435\\\\u043c" +
     "\\\\u043b\\\\u0435\\\\u043a\\\\u043e\\\\u043f\\\\u0430\")})"
   inspect(actual, content=expected)

@@ -1,0 +1,69 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jinser/json/lib"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn decode(String, decode? : &Decode) -> Json raise
+
+pub fn decode_continue(String, ContinueValue) -> Value raise
+
+pub fn decode_start(String, decode? : &Decode) -> Value raise
+
+// Errors
+pub suberror ParseError {
+  ParseError(Reason)
+} derive(@debug.Debug)
+
+// Types and methods
+type Checkpoint derive(@debug.Debug)
+
+pub struct ContinueValue {
+  rest : ArrayView[Char]
+  arr_acc : Array[Json]
+  obj_acc : Map[String, Json]
+  stack : Array[Frame]
+  decode : &Decode
+  checkpoint : Checkpoint
+}
+
+pub struct FinishValue {
+  value : Json
+  arr_acc : Array[Json]
+  obj_acc : Map[String, Json]
+  rest : ArrayView[Char]
+} derive(@debug.Debug)
+
+type Frame derive(@debug.Debug)
+
+pub enum Reason {
+  InvalidByte(Int, Char)
+  UnexpectedEnd(Checkpoint)
+  UnexpectedSequence(Array[Char], Int)
+} derive(@debug.Debug)
+
+pub enum Value {
+  Continue(ContinueValue)
+  Finish(FinishValue)
+}
+
+// Type aliases
+pub type JsonArray = Array[Json]
+
+pub type JsonObject = Map[String, Json]
+
+// Traits
+pub trait Decode {
+  array_start(Self, Array[Json]) -> Array[Json]
+  array_push(Self, Json, Array[Json]) -> Array[Json]
+  array_finish(Self, Array[Json], Array[Json]) -> (Array[Json], Array[Json])
+  object_start(Self, Map[String, Json]) -> Map[String, Json]
+  object_push(Self, String, Json, Map[String, Json]) -> Map[String, Json]
+  object_finish(Self, Map[String, Json], Map[String, Json]) -> (Map[String, Json], Map[String, Json])
+  double(Self, ArrayView[Char]) -> Double raise
+  integer(Self, ArrayView[Char]) -> Int raise
+  string(Self, String) -> String
+}
+

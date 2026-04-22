@@ -1,7 +1,2 @@
 ///|
-using @json {
-  decode,
-  decode_start,
-  decode_continue,
-  type Value,
-}
+using @json {decode, decode_start, decode_continue, type Value}
