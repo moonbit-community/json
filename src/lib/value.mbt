@@ -20,7 +20,7 @@ pub struct FinishValue {
   arr_acc : JsonArray
   obj_acc : JsonObject
   rest : ArrayView[Char]
-} derive(Show)
+} derive(Debug)
 
 ///|
 enum Checkpoint {
@@ -32,4 +32,4 @@ enum Checkpoint {
   ObjectValue(String)
   ObjectPush((Json, String))
   FloatError(ArrayView[Char], Int)
-} derive(Show)
+} derive(Debug)
