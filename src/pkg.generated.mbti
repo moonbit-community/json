@@ -1,0 +1,33 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jinser/json"
+
+import {
+  "jinser/json/lib",
+}
+
+// Values
+pub fn decode(String, decode? : &@lib.Decode) -> Json raise
+
+pub fn decode_continue(String, @lib.ContinueValue) -> @lib.Value raise
+
+pub fn decode_start(String, decode? : &@lib.Decode) -> @lib.Value raise
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @lib {type ContinueValue}
+
+pub using @lib {type FinishValue}
+
+pub using @lib {type ParseError}
+
+pub using @lib {type Reason}
+
+pub using @lib {type Value}
+
+pub using @lib {trait Decode}
+
+// Traits
+

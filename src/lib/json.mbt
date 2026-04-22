@@ -174,7 +174,7 @@ fn number_frac_cont(ctx : Context, len : Int) -> Value raise {
 fn float_decode(
   ctx : Context,
   len : Int,
-  token : ArrayView[Char]
+  token : ArrayView[Char],
 ) -> Value raise {
   let { skip, .. } = ctx
   match ctx.rest {
@@ -226,7 +226,7 @@ fn number_exp_cont(ctx : Context, len : Int) -> Value raise {
 fn number_exp_copy(
   ctx : Context,
   len : Int,
-  prefix : ArrayView[Char]
+  prefix : ArrayView[Char],
 ) -> Value raise {
   match ctx.rest {
     ['0'..='9', .. rest] =>
@@ -242,7 +242,7 @@ fn number_exp_sign_with_prefix(
   ctx : Context,
   len : Int,
   prefix : ArrayView[Char],
-  exp_len : Int
+  exp_len : Int,
 ) -> Value raise {
   match ctx.rest {
     ['0'..='9', .. rest] =>
@@ -256,7 +256,7 @@ fn number_exp_cont_with_prefix(
   ctx : Context,
   len : Int,
   prefix : ArrayView[Char],
-  exp_len : Int
+  exp_len : Int,
 ) -> Value raise {
   let { original, skip, .. } = ctx
   match ctx.rest {
@@ -502,7 +502,7 @@ fn unexpected(
   ctx : Context,
   pos : Int,
   len : Int,
-  func_data : Checkpoint
+  func_data : Checkpoint,
 ) -> Value raise {
   let { original, arr_acc, obj_acc, skip, stack, decode, .. } = ctx
   let required_size = skip + pos + len
