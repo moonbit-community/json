@@ -39,7 +39,7 @@ pub fn decode(input : String, decode? : &Decode) -> Json raise {
     Continue({ stack: [], checkpoint: Checkpoint::NumberD(n), .. }) =>
       n.to_json()
     Continue({ checkpoint: Checkpoint::FloatError(token, skip), .. }) =>
-      raise ParseError(UnexpectedSequence(token.to_array(), skip))
+      raise ParseError(UnexpectedSequence(token.to_owned(), skip))
     Continue({ checkpoint: cp, .. }) => raise ParseError(UnexpectedEnd(cp))
   }
 }
