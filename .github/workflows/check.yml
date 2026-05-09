@@ -41,3 +41,7 @@ jobs:
         run: |
           moon fmt
           git diff --exit-code
+
+      - name: moon test
+        run: |
+          moon test --target all
