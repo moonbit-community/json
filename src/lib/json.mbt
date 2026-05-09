@@ -106,15 +106,18 @@ fn value(ctx : Context) -> Value raise {
 
 ///|
 fn number_zero(ctx : Context, len : Int) -> Value raise {
+  let { original, skip, .. } = ctx
   match ctx.rest {
     [] => {
-      let value = ctx.decode.integer(['0'][:])
+      let token = original[skip:skip + len]
+      let value = integer_decode(ctx, token)
       unexpected(ctx, len, 0, Checkpoint::NumberI(value))
     }
     ['.', .. rest] => number_frac({ ..ctx, rest, }, len + 1)
-    ['e' | 'E', .. rest] => number_exp_copy({ ..ctx, rest, }, len + 1, ['0'])
+    ['e' | 'E', .. rest] => number_exp({ ..ctx, rest, }, len + 1)
     rest => {
-      let value = ctx.decode.integer(['0'][:])
+      let token = original[skip:skip + len]
+      let value = integer_decode(ctx, token)
       continue_(
         { ..ctx, rest, skip: ctx.skip + len },
         Json::number(value.to_double()),
@@ -129,18 +132,15 @@ fn number(ctx : Context, len : Int) -> Value raise {
   match ctx.rest {
     ['0'..='9', .. rest] => number({ ..ctx, rest, }, len + 1)
     ['.', .. rest] => number_frac({ ..ctx, rest, }, len + 1)
-    ['e' | 'E', .. rest] => {
-      let prefix = original[skip:skip + len]
-      number_exp_copy({ ..ctx, rest, }, len + 1, prefix)
-    }
+    ['e' | 'E', .. rest] => number_exp({ ..ctx, rest, }, len + 1)
     [] => {
       let part = original[skip:skip + len]
-      let value = ctx.decode.integer(part)
+      let value = integer_decode(ctx, part)
       unexpected(ctx, len, 0, Checkpoint::NumberI(value))
     }
     rest => {
       let part = original[skip:skip + len]
-      let value = ctx.decode.integer(part)
+      let value = integer_decode(ctx, part)
       continue_(
         { ..ctx, rest, skip: skip + len },
         Json::number(value.to_double()),
@@ -223,59 +223,20 @@ fn number_exp_cont(ctx : Context, len : Int) -> Value raise {
 }
 
 ///|
-fn number_exp_copy(
-  ctx : Context,
-  len : Int,
-  prefix : ArrayView[Char],
-) -> Value raise {
-  match ctx.rest {
-    ['0'..='9', .. rest] =>
-      number_exp_cont_with_prefix({ ..ctx, rest, }, len, prefix, 1)
-    ['+' | '-', .. rest] =>
-      number_exp_sign_with_prefix({ ..ctx, rest, }, len, prefix, 1)
-    _ => unexpected(ctx, len, 0, Checkpoint::Value)
-  }
-}
-
-///|
-fn number_exp_sign_with_prefix(
-  ctx : Context,
-  len : Int,
-  prefix : ArrayView[Char],
-  exp_len : Int,
-) -> Value raise {
-  match ctx.rest {
-    ['0'..='9', .. rest] =>
-      number_exp_cont_with_prefix({ ..ctx, rest, }, len, prefix, exp_len + 1)
-    _ => unexpected(ctx, len + exp_len, 0, Checkpoint::Value)
-  }
-}
-
-///|
-fn number_exp_cont_with_prefix(
-  ctx : Context,
-  len : Int,
-  prefix : ArrayView[Char],
-  exp_len : Int,
-) -> Value raise {
-  let { original, skip, .. } = ctx
-  match ctx.rest {
-    ['0'..='9', .. rest] =>
-      number_exp_cont_with_prefix({ ..ctx, rest, }, len, prefix, exp_len + 1)
-    _ => {
-      let suffix = original[skip:skip + len]
-      let token = [..prefix, '.', '0', 'e', ..suffix]
-      float_decode(ctx, len + exp_len, token)
-    }
-  }
-}
-
-///|
 fn number_minus(ctx : Context) -> Value raise {
   match ctx.rest {
     ['0', .. rest] => number_zero({ ..ctx, rest, }, 2)
     ['1'..='9', .. rest] => number({ ..ctx, rest, }, 2)
     _ => unexpected(ctx, 1, 0, Checkpoint::Value)
+  }
+}
+
+///|
+fn integer_decode(ctx : Context, token : ArrayView[Char]) -> Int raise {
+  try ctx.decode.integer(token) catch {
+    _ => raise ParseError(UnexpectedSequence(token.to_owned(), ctx.skip))
+  } noraise {
+    value => value
   }
 }
 
@@ -316,16 +277,168 @@ fn null(ctx : Context) -> Value raise {
 
 ///|
 fn string(ctx : Context, len : Int) -> Value raise {
-  let { original, skip, .. } = ctx
+  let builder = StringBuilder::new(size_hint=len)
+  string_scan(ctx, len, builder)
+}
+
+///|
+fn string_scan(
+  ctx : Context,
+  len : Int,
+  builder : StringBuilder,
+) -> Value raise {
+  let { skip, .. } = ctx
   match ctx.rest {
     ['"', .. rest] => {
-      let value = original[skip:skip + len]
       let skip = skip + len + 1
-      let s = ctx.decode.string(String::from_iter(value.iter()))
+      let s = ctx.decode.string(builder.to_string())
       continue_({ ..ctx, rest, skip }, Json::string(s))
     }
-    [_, .. rest] => string({ ..ctx, rest, }, len + 1)
+    ['\\', .. rest] => string_escape({ ..ctx, rest, }, len, builder)
+    [c, .. rest] =>
+      if c.to_int() < 0x20 {
+        raise invalid_byte(ctx.original, skip + len)
+      } else {
+        builder.write_char(c)
+        string_scan({ ..ctx, rest, }, len + 1, builder)
+      }
     _ => unexpected({ ..ctx, skip: skip - 1 }, len + 1, 0, Checkpoint::Value)
+  }
+}
+
+///|
+fn string_escape(
+  ctx : Context,
+  len : Int,
+  builder : StringBuilder,
+) -> Value raise {
+  match ctx.rest {
+    ['"', .. rest] => {
+      builder.write_char('"')
+      string_scan({ ..ctx, rest, }, len + 2, builder)
+    }
+    ['\\', .. rest] => {
+      builder.write_char('\\')
+      string_scan({ ..ctx, rest, }, len + 2, builder)
+    }
+    ['/', .. rest] => {
+      builder.write_char('/')
+      string_scan({ ..ctx, rest, }, len + 2, builder)
+    }
+    ['b', .. rest] => {
+      builder.write_char('\u{08}')
+      string_scan({ ..ctx, rest, }, len + 2, builder)
+    }
+    ['f', .. rest] => {
+      builder.write_char('\u{0c}')
+      string_scan({ ..ctx, rest, }, len + 2, builder)
+    }
+    ['n', .. rest] => {
+      builder.write_char('\n')
+      string_scan({ ..ctx, rest, }, len + 2, builder)
+    }
+    ['r', .. rest] => {
+      builder.write_char('\r')
+      string_scan({ ..ctx, rest, }, len + 2, builder)
+    }
+    ['t', .. rest] => {
+      builder.write_char('\t')
+      string_scan({ ..ctx, rest, }, len + 2, builder)
+    }
+    ['u', a, b, c, d, .. rest] => {
+      let code_unit = unicode_escape_value(ctx, len, a, b, c, d)
+      string_unicode(ctx, len, code_unit, rest, builder)
+    }
+    ['u', ..] =>
+      unexpected({ ..ctx, skip: ctx.skip - 1 }, len + 6, 0, Checkpoint::Value)
+    [_, ..] => raise invalid_byte(ctx.original, ctx.skip + len + 1)
+    [] =>
+      unexpected({ ..ctx, skip: ctx.skip - 1 }, len + 2, 0, Checkpoint::Value)
+  }
+}
+
+///|
+fn string_unicode(
+  ctx : Context,
+  len : Int,
+  code_unit : Int,
+  rest : ArrayView[Char],
+  builder : StringBuilder,
+) -> Value raise {
+  if code_unit.is_leading_surrogate() {
+    match rest {
+      ['\\', 'u', a, b, c, d, .. rest] => {
+        let low = unicode_escape_value(ctx, len + 6, a, b, c, d)
+        if low.is_trailing_surrogate() {
+          let codepoint = 0x10000 +
+            (code_unit - 0xD800) * 0x400 +
+            (low - 0xDC00)
+          write_codepoint(ctx, ctx.skip + len, codepoint, builder)
+          string_scan({ ..ctx, rest, }, len + 12, builder)
+        } else {
+          raise invalid_byte(ctx.original, ctx.skip + len + 8)
+        }
+      }
+      ['\\', 'u', ..] =>
+        unexpected(
+          { ..ctx, skip: ctx.skip - 1 },
+          len + 12,
+          0,
+          Checkpoint::Value,
+        )
+      [] | ['\\'] =>
+        unexpected(
+          { ..ctx, skip: ctx.skip - 1 },
+          len + 12,
+          0,
+          Checkpoint::Value,
+        )
+      _ => raise invalid_byte(ctx.original, ctx.skip + len + 6)
+    }
+  } else if code_unit.is_trailing_surrogate() {
+    raise invalid_byte(ctx.original, ctx.skip + len + 2)
+  } else {
+    write_codepoint(ctx, ctx.skip + len + 2, code_unit, builder)
+    string_scan({ ..ctx, rest, }, len + 6, builder)
+  }
+}
+
+///|
+fn unicode_escape_value(
+  ctx : Context,
+  len : Int,
+  a : Char,
+  b : Char,
+  c : Char,
+  d : Char,
+) -> Int raise {
+  let a = hex_value(ctx, ctx.skip + len + 2, a)
+  let b = hex_value(ctx, ctx.skip + len + 3, b)
+  let c = hex_value(ctx, ctx.skip + len + 4, c)
+  let d = hex_value(ctx, ctx.skip + len + 5, d)
+  a * 0x1000 + b * 0x100 + c * 0x10 + d
+}
+
+///|
+fn hex_value(ctx : Context, index : Int, c : Char) -> Int raise {
+  match c {
+    '0'..='9' => c.to_int() - '0'.to_int()
+    'a'..='f' => c.to_int() - 'a'.to_int() + 10
+    'A'..='F' => c.to_int() - 'A'.to_int() + 10
+    _ => raise invalid_byte(ctx.original, index)
+  }
+}
+
+///|
+fn write_codepoint(
+  ctx : Context,
+  index : Int,
+  codepoint : Int,
+  builder : StringBuilder,
+) -> Unit raise {
+  match codepoint.to_char() {
+    Some(c) => builder.write_char(c)
+    None => raise invalid_byte(ctx.original, index)
   }
 }
 
