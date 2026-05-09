@@ -39,7 +39,9 @@ impl Decode for Unit with object_start(_self, _old_acc) -> JsonObject {
 
 ///|
 impl Decode for Unit with object_push(_self, key, value, acc) {
-  acc[key] = value
+  if !acc.contains(key) {
+    acc[key] = value
+  }
   acc
 }
 
