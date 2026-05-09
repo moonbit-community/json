@@ -4,7 +4,7 @@ Streaming Json parser, inspired by [SAX (Simple API for XML)](https://en.wikiped
 
 ### TODOs
 
-[TODOs](./TODOs.md)
+[TODO](./TODO.md)
 
 ### Credits
 
