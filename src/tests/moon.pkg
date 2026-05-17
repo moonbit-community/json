@@ -1,4 +1,5 @@
 import {
   "jinser/json",
   "jinser/json/lib",
+  "moonbitlang/core/debug",
 }

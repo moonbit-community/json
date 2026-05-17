@@ -30,7 +30,7 @@ fn expect_chunked_json(
   expected : Json,
 ) -> Unit raise {
   match decode_chunks(chunks) {
-    Finish({ value, rest: [], .. }) => assert_eq(value, expected)
+    Finish({ value, rest: [], .. }) => @debug.assert_eq(value, expected)
     Finish({ rest, .. }) =>
       incr_fail(
         "expected chunked JSON without trailing bytes: " +
@@ -74,7 +74,7 @@ test "incr json" {
     "foo": Json::object({ "bar": Json::number(1200.0) }),
     "quz": Json::array([Json::number(42.0), Json::boolean(true)]),
   })
-  assert_eq(value, expected)
+  @debug.assert_eq(value, expected)
 }
 
 ///|
@@ -133,7 +133,7 @@ test "incr invalid json rejects after continuation" {
 test "incr finish keeps trailing rest" {
   match decode_chunks(["{\"a", "\":1} trailing"][:]) {
     Finish({ value, rest, .. }) => {
-      assert_eq(value, Json::object({ "a": Json::number(1.0) }))
+      @debug.assert_eq(value, Json::object({ "a": Json::number(1.0) }))
       assert_eq(String::from_array([..rest]), " trailing")
     }
     Continue(_) =>
