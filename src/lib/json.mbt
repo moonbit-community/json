@@ -27,7 +27,7 @@ pub fn decode(input : String, decode? : &Decode) -> Json raise {
     original: input.to_array(),
     skip: 0,
     arr_acc: [],
-    obj_acc: Map::new(),
+    obj_acc: Map([]),
     stack: [],
     decode,
   }
@@ -55,7 +55,7 @@ pub fn decode_start(input : String, decode? : &Decode) -> Value raise {
     original: input.to_array(),
     skip: 0,
     arr_acc: [],
-    obj_acc: Map::new(),
+    obj_acc: Map([]),
     stack: [],
     decode,
   }

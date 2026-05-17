@@ -34,7 +34,7 @@ impl Decode for Unit with array_finish(_self, acc, old_acc) {
 
 ///|
 impl Decode for Unit with object_start(_self, _old_acc) -> JsonObject {
-  Map::new()
+  Map([])
 }
 
 ///|
