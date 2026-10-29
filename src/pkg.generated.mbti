@@ -30,4 +30,3 @@ pub using @lib {type Value}
 pub using @lib {trait Decode}
 
 // Traits
-

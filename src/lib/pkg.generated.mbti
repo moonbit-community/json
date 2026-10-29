@@ -16,9 +16,11 @@ pub fn decode_start(String, decode? : &Decode) -> Value raise
 pub suberror ParseError {
   ParseError(Reason)
 } derive(@debug.Debug)
+pub fn ParseError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 type Checkpoint derive(@debug.Debug)
+pub fn Checkpoint::to_repr(Self) -> @debug.Repr
 
 pub struct ContinueValue {
   rest : ArrayView[Char]
@@ -35,14 +37,17 @@ pub struct FinishValue {
   obj_acc : Map[String, Json]
   rest : ArrayView[Char]
 } derive(@debug.Debug)
+pub fn FinishValue::to_repr(Self) -> @debug.Repr
 
 type Frame derive(@debug.Debug)
+pub fn Frame::to_repr(Self) -> @debug.Repr
 
 pub enum Reason {
-  InvalidByte(Int, Char)
+  InvalidByte(Int32, Char)
   UnexpectedEnd(Checkpoint)
-  UnexpectedSequence(Array[Char], Int)
+  UnexpectedSequence(Array[Char], Int32)
 } derive(@debug.Debug)
+pub fn Reason::to_repr(Self) -> @debug.Repr
 
 pub enum Value {
   Continue(ContinueValue)
@@ -56,14 +61,13 @@ pub type JsonObject = Map[String, Json]
 
 // Traits
 pub trait Decode {
-  array_start(Self, Array[Json]) -> Array[Json]
-  array_push(Self, Json, Array[Json]) -> Array[Json]
-  array_finish(Self, Array[Json], Array[Json]) -> (Array[Json], Array[Json])
-  object_start(Self, Map[String, Json]) -> Map[String, Json]
-  object_push(Self, String, Json, Map[String, Json]) -> Map[String, Json]
-  object_finish(Self, Map[String, Json], Map[String, Json]) -> (Map[String, Json], Map[String, Json])
-  double(Self, ArrayView[Char]) -> Double raise
-  integer(Self, ArrayView[Char]) -> Int raise
-  string(Self, String) -> String
+  fn array_start(Self, Array[Json]) -> Array[Json]
+  fn array_push(Self, Json, Array[Json]) -> Array[Json]
+  fn array_finish(Self, Array[Json], Array[Json]) -> (Array[Json], Array[Json])
+  fn object_start(Self, Map[String, Json]) -> Map[String, Json]
+  fn object_push(Self, String, Json, Map[String, Json]) -> Map[String, Json]
+  fn object_finish(Self, Map[String, Json], Map[String, Json]) -> (Map[String, Json], Map[String, Json])
+  fn double(Self, ArrayView[Char]) -> Double raise
+  fn integer(Self, ArrayView[Char]) -> Int32 raise
+  fn string(Self, String) -> String
 }
-

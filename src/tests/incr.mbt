@@ -65,10 +65,10 @@ fn expect_chunked_reject(
 test "incr json" {
   let compelet_json =
     #|{"foo": {"bar": 1.2e3}, "quz": [42, true]}
-  guard compelet_json.to_array().chunks(6).map(String::from_array)
+  guard! compelet_json.to_array().chunks(6).map(String::from_array)
     is [first_chunk, .. chunks]
   // start parsing from `first_chunk`
-  guard continue_chunks(chunks, decode_start(first_chunk))
+  guard! continue_chunks(chunks, decode_start(first_chunk))
     is Finish({ value, .. })
   let expected = Json::object({
     "foo": Json::object({ "bar": Json::number(1200.0) }),

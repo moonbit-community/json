@@ -25,11 +25,17 @@ pub struct FinishValue {
 ///|
 enum Checkpoint {
   Value
-  NumberI(Int)
+  NumberI(Int32)
   NumberD(Double)
   ArrayPush(Json)
   ObjectKey
   ObjectValue(String)
   ObjectPush((Json, String))
-  FloatError(ArrayView[Char], Int)
+  FloatError(ArrayView[Char], Int32)
 } derive(Debug)
+
+///|
+pub extend FinishValue with @debug.Debug::{to_repr}
+
+///|
+pub extend Checkpoint with @debug.Debug::{to_repr}
