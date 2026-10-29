@@ -53,7 +53,7 @@ priv enum JsonTestSuiteSupport {
 priv struct JsonTestSuiteCase {
   filename : String
   category : JsonTestSuiteCategory
-  byte_length : Int
+  byte_length : Int32
   sha256 : String
   source_url : String
   support : JsonTestSuiteSupport

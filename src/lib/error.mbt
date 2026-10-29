@@ -5,7 +5,13 @@ pub suberror ParseError {
 
 ///|
 pub enum Reason {
-  InvalidByte(Int, Char)
+  InvalidByte(Int32, Char)
   UnexpectedEnd(Checkpoint)
-  UnexpectedSequence(Array[Char], Int)
+  UnexpectedSequence(Array[Char], Int32)
 } derive(Debug)
+
+///|
+pub extend ParseError with @debug.Debug::{to_repr}
+
+///|
+pub extend Reason with @debug.Debug::{to_repr}
